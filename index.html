@@ -1,63 +1,110 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Minimal App</title>
-<style>
-  /* Reset & base */
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; background: #f9f9f9; color: #333; }
-  main { max-width: 680px; margin: 40px auto; padding: 0 16px; }
-  h1 { margin-bottom: 1rem; font-size: 1.8rem; }
-  button {
-    padding: .6rem 1rem;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background: #fff;
-    cursor: pointer;
-    font-size: 1rem;
-  }
-  button:hover { background: #f0f0f0; }
-  pre {
-    margin-top: 1rem;
-    background: #fff;
-    border: 1px solid #ddd;
-    padding: 12px;
-    border-radius: 6px;
-    font-size: .9rem;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  /* Mobile tweaks */
-  @media (max-width: 480px) {
-    h1 { font-size: 1.4rem; }
-    button { width: 100%; }
-  }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Echo Demo (No Framework)</title>
+  <style>
+    /* Base */
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #f7f7f7; color: #222; }
+    main { max-width: 720px; margin: 48px auto; padding: 0 16px; }
+    h1 { font-size: 1.75rem; margin: 0 0 12px; }
+    p  { margin: 0 0 20px; color: #555; }
+
+    /* Form */
+    .row { display: flex; gap: 10px; align-items: center; }
+    input[type="text"] {
+      flex: 1;
+      padding: .65rem .8rem;
+      border: 1px solid #d0d7de;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #fff;
+    }
+    button {
+      padding: .65rem 1rem;
+      border: 1px solid #c2c8cf;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background .15s ease;
+    }
+    button:hover { background: #f0f2f4; }
+
+    /* Output */
+    pre {
+      margin-top: 16px;
+      background: #fff;
+      border: 1px solid #e3e6ea;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: .95rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 60px;
+    }
+
+    /* Mobile */
+    @media (max-width: 520px) {
+      .row { flex-direction: column; align-items: stretch; }
+      button { width: 100%; }
+    }
+  </style>
 </head>
 <body>
-<main>
-  <h1>Minimal Frontend</h1>
-  <button id="load">Load Message</button>
-  <pre id="output">Click the button to fetch data…</pre>
-</main>
-<script>
-  const btn = document.getElementById('load');
-  const out = document.getElementById('output');
+  <main>
+    <h1>Echo Anything</h1>
+    <p>Type something and click <b>Send</b>. The server will send it back.</p>
 
-  btn.addEventListener('click', async () => {
-    out.textContent = 'Loading...';
-    try {
-      // Replace with your backend URL
-      const res = await fetch('https://your-backend.onrender.com/api/hello', { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      out.textContent = JSON.stringify(data, null, 2);
-    } catch (err) {
-      out.textContent = `Error: ${err.message}`;
+    <div class="row">
+      <input id="msg" type="text" placeholder="Type anything…" autocomplete="off" />
+      <button id="send">Send</button>
+    </div>
+
+    <pre id="out">Waiting…</pre>
+  </main>
+
+  <script>
+    // --- Set your backend base URL ---
+    // Local dev (API at http://localhost:3000) vs deployed (Render, etc.)
+    const API_BASE = (location.hostname === 'localhost')
+      ? 'http://localhost:3000'
+      : 'https://YOUR-API.onrender.com'; // <-- replace when deployed
+
+    const $ = (sel) => document.querySelector(sel);
+    const input = $('#msg');
+    const out   = $('#out');
+    const btn   = $('#send');
+
+    async function echo() {
+      const text = input.value.trim();
+      if (!text) {
+        out.textContent = 'Please type something first.';
+        input.focus();
+        return;
+      }
+      out.textContent = 'Sending…';
+      try {
+        const res = await fetch(`${API_BASE}/api/echo`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        // Safely display JSON
+        out.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        out.textContent = `Error: ${err.message}`;
+      }
     }
-  });
-</script>
+
+    btn.addEventListener('click', echo);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') echo();
+    });
+  </script>
 </body>
 </html>
