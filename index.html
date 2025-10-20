@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Minimal App</title>
+<style>
+  /* Reset & base */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f9f9f9; color: #333; }
+  main { max-width: 680px; margin: 40px auto; padding: 0 16px; }
+  h1 { margin-bottom: 1rem; font-size: 1.8rem; }
+  button {
+    padding: .6rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  button:hover { background: #f0f0f0; }
+  pre {
+    margin-top: 1rem;
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: .9rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  /* Mobile tweaks */
+  @media (max-width: 480px) {
+    h1 { font-size: 1.4rem; }
+    button { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Minimal Frontend</h1>
+  <button id="load">Load Message</button>
+  <pre id="output">Click the button to fetch data…</pre>
+</main>
+<script>
+  const btn = document.getElementById('load');
+  const out = document.getElementById('output');
+
+  btn.addEventListener('click', async () => {
+    out.textContent = 'Loading...';
+    try {
+      // Replace with your backend URL
+      const res = await fetch('https://your-backend.onrender.com/api/hello', { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      out.textContent = JSON.stringify(data, null, 2);
+    } catch (err) {
+      out.textContent = `Error: ${err.message}`;
+    }
+  });
+</script>
+</body>
+</html>
